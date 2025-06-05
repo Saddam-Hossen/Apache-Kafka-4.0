@@ -1,75 +1,22 @@
 # Apache-Kafka-4.0
 Here's a step-by-step documentation guide to **install and run Apache Kafka 4.0 on Windows**:
 
----
+````markdown
+# Apache Kafka Setup (KRaft Mode) on Windows (Git Bash)
 
-# Apache Kafka 4.0 Installation and Setup Guide on Windows
+This repository documents how to set up and run Apache Kafka 4.0.0 in **KRaft mode** (without ZooKeeper) on Windows using Git Bash.
 
-### Prerequisites:
+## Prerequisites
 
-* Java JDK 11 or later installed and `JAVA_HOME` environment variable configured.
-* Git Bash or another Unix-like terminal emulator on Windows (e.g., MINGW64, Git Bash, or WSL).
-* Basic knowledge of command line usage.
+- [Java 11 or later](https://adoptium.net/)
+- [Apache Kafka 4.0.0 (Scala 2.13)](https://kafka.apache.org/downloads)
+- Git Bash (part of [Git for Windows](https://gitforwindows.org/))
 
----
+## Setup Steps
 
-## 1. Download Kafka
+### 1. Edit `server.properties`
 
-1. Go to the official Apache Kafka download page:
-   [https://kafka.apache.org/downloads](https://kafka.apache.org/downloads)
-
-2. Download the **binary** for Scala 2.13 and Kafka 4.0, for example:
-   `kafka_2.13-4.0.0.tgz`
-
-3. Extract the downloaded archive to a convenient location, e.g.,
-   `C:\Users\YOUR_USERNAME\Downloads\kafka_2.13-4.0.0`
-
----
-
-## 2. Set Environment Variables (Optional but recommended)
-
-Add Kafka's `bin/windows` (for running Windows scripts) or `bin` (for bash scripts) to your PATH or use full path commands in Git Bash.
-
----
-
-## 3. Generate a Cluster ID (UUID)
-
-Kafka 4.0 introduces the KRaft mode, which can run Kafka without ZooKeeper.
-
-Run this in Git Bash or terminal:
-
-```bash
-cd /c/Users/YOUR_USERNAME/Downloads/kafka_2.13-4.0.0
-export KAFKA_LOG4J_OPTS="-Dlog4j.configurationFile=file:///c:/Users/YOUR_USERNAME/Downloads/kafka_2.13-4.0.0/config/tools-log4j2.yaml"
-
-./bin/kafka-storage.sh random-uuid
-```
-
-This outputs a UUID like `_5zEC1txQumyeV_tyFIlHg`. Save this value.
-
----
-
-## 4. Configure Kafka Storage
-
-Format the Kafka storage directory using the UUID:
-
-```bash
-./bin/kafka-storage.sh format -t YOUR_UUID_HERE -c config/server.properties
-```
-
-Example:
-
-```bash
-./bin/kafka-storage.sh format -t _5zEC1txQumyeV_tyFIlHg -c config/server.properties
-```
-
-This initializes Kafka's log storage for KRaft mode.
-
----
-
-## 5. Edit `server.properties`
-
-Make sure `config/server.properties` has the following minimal relevant configs for KRaft mode:
+Make sure `config/server.properties` has the following minimal configuration for **KRaft mode**:
 
 ```properties
 process.roles=broker,controller
@@ -79,86 +26,127 @@ listeners=PLAINTEXT://localhost:9092,CONTROLLER://localhost:9093
 listener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
 inter.broker.listener.name=PLAINTEXT
 log.dirs=/tmp/kraft-combined-logs
-```
+````
 
 * `log.dirs` can be any writable directory.
-* Ports 9092 (client connections) and 9093 (controller) must be free.
+* Make sure ports **9092** (for clients) and **9093** (for controller communication) are free.
 
 ---
 
-## 6. Start Kafka Server
+### 2. Set up Logging Configuration
 
-Run:
+Set the environment variable for Kafka’s logging configuration:
+
+```bash
+export KAFKA_LOG4J_OPTS="-Dlog4j.configurationFile=file:///D:/kafka_2.13-4.0.0/config/tools-log4j2.yaml"
+```
+
+> 📝 Update the path to your actual Kafka directory if different.
+
+---
+
+### 3. Generate Cluster UUID
+
+Kafka in KRaft mode requires a unique cluster ID:
+
+```bash
+./bin/kafka-storage.sh random-uuid
+```
+
+Example output:
+
+```
+k7uCOaJpRHi9hBGujYaCEg
+```
+
+---
+
+### 4. Format the Storage Directory
+
+Format Kafka’s log directory using the generated UUID:
+
+```bash
+./bin/kafka-storage.sh format -t k7uCOaJpRHi9hBGujYaCEg -c config/server.properties
+```
+
+Expected output:
+
+```
+Formatting metadata directory /tmp/kraft-combined-logs with metadata.version 4.0-IV3.
+```
+
+---
+
+### 5. Start the Kafka Server
 
 ```bash
 ./bin/kafka-server-start.sh config/server.properties
 ```
 
-You should see logs indicating Kafka started with KRaft mode and no ZooKeeper.
+Look for logs indicating successful startup and controller activation:
+
+```
+Performing controller activation...
+Appending 3 bootstrap record(s)...
+```
 
 ---
 
-## 7. Create a Kafka Topic
+### 6. Create and List Topics (in another terminal)
 
-In a new terminal, run:
+#### Set logging config again:
 
 ```bash
-./bin/kafka-topics.sh --create --topic my-first-topic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+export KAFKA_LOG4J_OPTS="-Dlog4j.configurationFile=file:///D:/kafka_2.13-4.0.0/config/tools-log4j2.yaml"
 ```
 
-If successful, it will print:
-
-```
-Created topic my-first-topic.
-```
-
----
-
-## 8. Verify Topics
-
-List topics:
+#### List existing topics:
 
 ```bash
 ./bin/kafka-topics.sh --list --bootstrap-server localhost:9092
 ```
 
----
-
-## 9. Produce and Consume Messages
-
-* **Producer:**
+#### Create a new topic:
 
 ```bash
-./bin/kafka-console-producer.sh --topic my-first-topic --bootstrap-server localhost:9092
+./bin/kafka-topics.sh --create \
+  --topic test-topic \
+  --bootstrap-server localhost:9092 \
+  --partitions 3 \
+  --replication-factor 1
 ```
 
-Type messages and hit enter to send.
-
-* **Consumer:**
+#### Verify the topic:
 
 ```bash
-./bin/kafka-console-consumer.sh --topic my-first-topic --from-beginning --bootstrap-server localhost:9092
+./bin/kafka-topics.sh --list --bootstrap-server localhost:9092
 ```
 
-You will see the messages consumed live.
+Output:
+
+```
+test-topic
+```
 
 ---
 
-## Troubleshooting Tips
+## Notes
 
-* **Log4j Configuration Errors:**
-  Use a valid URI for `log4j.configurationFile` when setting `KAFKA_LOG4J_OPTS`, e.g.:
-  `file:///c:/Users/YOUR_USERNAME/Downloads/kafka_2.13-4.0.0/config/tools-log4j2.yaml` (use forward slashes and `file:///` prefix).
+* Kafka 4.x uses **KRaft mode by default**, removing the need for ZooKeeper.
+* `log.dirs` is the directory used for metadata and log storage. Make sure it’s writable.
+* Firewall must allow ports `9092` and `9093`.
 
-* **Port Conflicts:**
-  Make sure ports 9092 and 9093 are free before starting Kafka.
+## References
 
-* **Kafka Storage Format Errors:**
-  If you see errors about mismatched cluster IDs, delete your log directory (e.g., `/tmp/kraft-combined-logs`) and re-run `kafka-storage.sh format` with your UUID.
-
-* **Running on Windows:**
-  Use Git Bash or WSL for bash scripts. Alternatively, use `.bat` files in `bin/windows` if you prefer Windows cmd.
+* [Apache Kafka Official Documentation](https://kafka.apache.org/documentation/)
+* [Kafka KRaft Mode Guide](https://kafka.apache.org/documentation/#kraft)
 
 ---
 
-If you want, I can help you prepare a batch script or PowerShell script to automate this setup. Would you like that?
+Happy streaming! 🚀
+
+```
+
+---
+
+```
