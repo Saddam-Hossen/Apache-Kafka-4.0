@@ -38,19 +38,8 @@ cd kafka_2.13-4.0.0
 ```
 
 ````markdown
-# Apache Kafka Setup (KRaft Mode) on Windows (Git Bash)
 
-This repository documents how to set up and run Apache Kafka 4.0.0 in **KRaft mode** (without ZooKeeper) on Windows using Git Bash.
-
-## Prerequisites
-
-- [Java 11 or later](https://adoptium.net/)
-- [Apache Kafka 4.0.0 (Scala 2.13)](https://kafka.apache.org/downloads)
-- Git Bash (part of [Git for Windows](https://gitforwindows.org/))
-
-## Setup Steps
-
-### 1. Edit `server.properties`
+### a. Edit `server.properties`
 
 Make sure `config/server.properties` has the following minimal configuration for **KRaft mode**:
 
