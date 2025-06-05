@@ -1,6 +1,42 @@
 # Apache-Kafka-4.0
 Here's a step-by-step documentation guide to **install and run Apache Kafka 4.0 on Windows**:
 
+To install **Apache Kafka 4.0**, follow these steps based on your operating system and environment. Kafka 4.0 uses **KRaft mode by default** (no ZooKeeper). Here’s a simple step-by-step installation guide:
+
+---
+
+## ✅ Prerequisites
+
+* **Java 17+** (Kafka 4.0 requires Java 17 for the broker)
+* **JRE/JDK 11+** for Kafka clients/streams
+* **Linux/macOS/Windows with WSL (Linux preferred for simplicity)**
+* **curl or wget**, and `tar` or `unzip`
+
+---
+
+## 📥 Step 0: Download Kafka 4.0
+
+From the official Apache site:
+
+```bash
+wget https://downloads.apache.org/kafka/4.0.0/kafka_2.13-4.0.0.tgz
+```
+
+Or via `curl`:
+
+```bash
+curl -O https://downloads.apache.org/kafka/4.0.0/kafka_2.13-4.0.0.tgz
+```
+
+---
+
+## 📦 Step 1: Extract Kafka
+
+```bash
+tar -xzf kafka_2.13-4.0.0.tgz
+cd kafka_2.13-4.0.0
+```
+
 ````markdown
 # Apache Kafka Setup (KRaft Mode) on Windows (Git Bash)
 
